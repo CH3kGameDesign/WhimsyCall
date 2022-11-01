@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 750ec80e731e5b64a8afdd6b8fd28677, type: 3}
+  m_Name: Generation Info
+  m_EditorClassIdentifier: 
+  areaAmount: 300
+  maxAreaSize: {x: 100, y: 30, z: 100}
+  worldChunkSize: {x: 1000, y: 1000}
+  biomeList: {fileID: 11400000, guid: ae15db2cbf8c23d4dbfc953a53918195, type: 2}
+  tilePropList: {fileID: 11400000, guid: 64e2dfcf58245204aa6546d6c65726db, type: 2}
+  doorWay: {fileID: 8633867357347756870, guid: daa6125d621b0024c8fd8104bb003fa0, type: 3}
+  invisibleWall: {fileID: 182314384861808189, guid: d4a166b51df202041a1f715e75b52bcc,
+    type: 3}
+  tileSize: {x: 2, y: 1, z: 2}
+  randomlyGenerated: 0
+  seed: 1
+  maxCorridorLength: 20
