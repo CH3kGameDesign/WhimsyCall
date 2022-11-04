@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Archipelago
   m_EditorClassIdentifier: 
   waterLevel: {x: 1, y: 4}
-  sizeRequirements: {x: 1, y: 20}
+  sizeRequirements: {x: 2, y: 10}
   availableGroundTiles: []
   availableProps: []
   baseLikelihood: 1

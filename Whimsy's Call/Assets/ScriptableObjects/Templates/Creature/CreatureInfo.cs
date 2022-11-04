@@ -18,7 +18,7 @@ namespace Whimsy.Creatures
         [Header("Attack Information")]
         public List<_attackInfo> availableAttacks = new List<_attackInfo>();
         [Header("Evolution Information")]
-        public CreatureObject evolution;
+        public CreatureInfo evolution;
         public _evoRequirements evoRequirements;
         public _stats lvl1Stats;
         public _stats lvlIncreaseStats;

@@ -247,13 +247,20 @@ MonoBehaviour:
     right: 100
     rotateLeft: 113
     rotateRight: 101
+    dodge: 274
+    abil1: 276
+    abil2: 273
+    abil3: 275
   tapInput:
     clickWaiter: 0.15
     cameraSwipeDistance: 0.5
   physicsVar:
     speed: 30
     brakingSpeed: 20
+    maxSpeed: 10
     velocityEffect: 0.175
+    verticalMultiplier: 5
+    dodgeCooldown: 1
     groundLayers:
       serializedVersion: 2
       m_Bits: 256
@@ -267,6 +274,7 @@ MonoBehaviour:
     tarRot: 0
     viewRangeActive: 1
     viewRange: 10
+  equippedCreatures: []
 --- !u!1 &7976851249657971649
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,6 +22,10 @@ public class LevelGeneration : MonoBehaviour
     [HideInInspector]
     public List<Area> worldAreas = new List<Area>();
 
+    public _MapColors mapColors = new _MapColors();
+
+    public UnityEngine.UI.RawImage minimap;
+
     public int[,] worldChunks;
 
     public int activeArea = 0;
@@ -43,7 +47,7 @@ public class LevelGeneration : MonoBehaviour
         #region Generate New World
         GenerateWorld();
 
-        ApplyArea(0);
+        DoorwayToArea(0);
         #endregion
     }
 
@@ -136,7 +140,6 @@ public class LevelGeneration : MonoBehaviour
         if (worldAreas[area].accurateInfo == null)
             worldAreas[area].accurateInfo = GenerateAreaAccurate(area);
 
-
         for (int x = 0; x < genInfo.maxAreaSize.x; x++)
         {
             for (int z = 0; z < genInfo.maxAreaSize.z; z++)
@@ -176,8 +179,8 @@ public class LevelGeneration : MonoBehaviour
         }
 
         //ApplyDoorways(area);
-       
-       
+        map = GenerateMapTexture_Large(prevArea);
+
         RoomLoadPlayerPosition(prevArea);
     }
 
@@ -197,16 +200,16 @@ public class LevelGeneration : MonoBehaviour
                     {
                         newPlayerPos = new Vector3(x * 2, 10, z * 2);
                         if (x < 5)
-                            newPlayerPos += new Vector3(6,0,2);
+                            newPlayerPos += new Vector3(7,0,2);
 
                         if (x > worldAreas[activeArea].looseInfo.tileSize.x - 5)
-                            newPlayerPos -= new Vector3(6, 0, 2);
+                            newPlayerPos += new Vector3(-5, 0, 2);
 
                         if (z < 5)
-                            newPlayerPos += new Vector3(2, 0, 6);
+                            newPlayerPos += new Vector3(3, 0, 5);
 
                         if (z > worldAreas[activeArea].looseInfo.tileSize.y - 5)
-                            newPlayerPos -= new Vector3(2, 0, 6);
+                            newPlayerPos += new Vector3(3, 0, -6);
 
                         break;
                     }
@@ -360,7 +363,7 @@ public class LevelGeneration : MonoBehaviour
         for (int i = 0; i < 3; i++)
             ShrinkWorld();
 
-        Texture2D map = GenerateMapTexture_Large();
+        map = GenerateMapTexture_Large();
     }
 
     //Generates An Area at a random distance from the centre of the map  //UNFINISHED
@@ -371,9 +374,9 @@ public class LevelGeneration : MonoBehaviour
 
         Vector2Int tempMapSize = Vector2Int.RoundToInt(new Vector2(
             Random.Range(genInfo.biomeList.Biomes[biomeNum].sizeRequirements.x,
-            genInfo.biomeList.Biomes[biomeNum].sizeRequirements.y),
+            genInfo.biomeList.Biomes[biomeNum].sizeRequirements.y) + 2,
             Random.Range(genInfo.biomeList.Biomes[biomeNum].sizeRequirements.x,
-            genInfo.biomeList.Biomes[biomeNum].sizeRequirements.y)));
+            genInfo.biomeList.Biomes[biomeNum].sizeRequirements.y) + 2));
 
         Vector2Int mapPosition = new Vector2Int(genInfo.worldChunkSize.x / 2, genInfo.worldChunkSize.y / 2);
 
@@ -521,7 +524,7 @@ public class LevelGeneration : MonoBehaviour
                     break;
             }
             loc = center + offset;
-            if (loc.x < 0 || loc.y < 0 || loc.x >= 500 || loc.y >= 500)
+            if (loc.x < 0 || loc.y < 0 || loc.x >= genInfo.worldChunkSize.x || loc.y >= genInfo.worldChunkSize.y)
                 break;
             id = worldChunks[loc.x, loc.y];
             if (id >= 0)
@@ -678,6 +681,7 @@ public class LevelGeneration : MonoBehaviour
     int[,] GenerateAreaHeightMap(int areaNum)
     {
         int[,] tempV2I = new int[worldAreas[areaNum].looseInfo.tileSize.x, worldAreas[areaNum].looseInfo.tileSize.y];
+        Debug.Log("Tile Size: " + worldAreas[areaNum].looseInfo.tileSize);
         for (int x = 0; x < worldAreas[areaNum].looseInfo.tileSize.x; x++)
         {
             for (int z = 0; z < worldAreas[areaNum].looseInfo.tileSize.y; z++)
@@ -703,6 +707,8 @@ public class LevelGeneration : MonoBehaviour
         for (int x = 5; x < worldAreas[areaNum].looseInfo.tileSize.x; x+=5)
         {
             tempChunkValue = worldChunks[Mathf.FloorToInt(x / 5) + worldAreas[activeArea].looseInfo.position.x, worldAreas[activeArea].looseInfo.position.y];
+            //Debug.Log(areaNum.ToString() + "'s TempChunkValue DBounds = " + tempChunkValue);
+
             if (tempChunkValue < -1)
             {
                 tempV2I[x + 1, 4] = GenerateHeightMapPoint(new Vector2Int(x + 1, 4));
@@ -719,6 +725,7 @@ public class LevelGeneration : MonoBehaviour
                 tempCorridorNum++;
             }
             tempChunkValue = worldChunks[Mathf.FloorToInt(x / 5) + worldAreas[activeArea].looseInfo.position.x, worldAreas[activeArea].looseInfo.position.y + worldAreas[activeArea].looseInfo.chunkSize.y];
+            //Debug.Log(areaNum.ToString() + "'s TempChunkValue UBounds = " + tempChunkValue);
             if (tempChunkValue < -1)
             {
                 tempV2I[x + 1, worldAreas[areaNum].looseInfo.tileSize.y - 5] = GenerateHeightMapPoint(new Vector2Int(x + 1, worldAreas[areaNum].looseInfo.tileSize.y - 5));
@@ -738,6 +745,7 @@ public class LevelGeneration : MonoBehaviour
         for (int z = 5; z < worldAreas[areaNum].looseInfo.tileSize.y; z += 5)
         {
             tempChunkValue = worldChunks[worldAreas[activeArea].looseInfo.position.x, Mathf.FloorToInt(z / 5) + worldAreas[activeArea].looseInfo.position.y];
+            //Debug.Log(areaNum.ToString() + "'s TempChunkValue LBounds = " + tempChunkValue);
             if (tempChunkValue < -1)
             {
                 tempV2I[4, z + 1] = GenerateHeightMapPoint(new Vector2Int(4, z + 1));
@@ -754,6 +762,7 @@ public class LevelGeneration : MonoBehaviour
                 tempCorridorNum++;
             }
             tempChunkValue = worldChunks[worldAreas[activeArea].looseInfo.position.x + worldAreas[activeArea].looseInfo.chunkSize.x, Mathf.FloorToInt(z / 5) + worldAreas[activeArea].looseInfo.position.y];
+            //Debug.Log(areaNum.ToString() + "'s TempChunkValue RBounds = " + tempChunkValue);
             if (tempChunkValue < -1)
             {
                 tempV2I[worldAreas[areaNum].looseInfo.tileSize.x - 5, z + 1] = GenerateHeightMapPoint(new Vector2Int(worldAreas[areaNum].looseInfo.tileSize.x - 5, z + 1));
@@ -828,16 +837,15 @@ public class LevelGeneration : MonoBehaviour
                 if (xTemp >= 0 && xTemp < genInfo.worldChunkSize.x &&
                     zTemp - z >= 0 && zTemp - z < genInfo.worldChunkSize.y)
                 {
-                    if (worldChunks[xTemp, zTemp - z] > 0 && worldChunks[xTemp, zTemp - z] != areaNum && !areaHistory.Contains(worldChunks[xTemp, zTemp - z]))
+                    if (worldChunks[xTemp, zTemp - z] >= 0 && worldChunks[xTemp, zTemp - z] != areaNum && !areaHistory.Contains(worldChunks[xTemp, zTemp - z]))
                     {
-                        if (worldChunks[xTemp + 1, zTemp + z] == worldChunks[xTemp, zTemp + z] &&
-                            worldChunks[xTemp - 1, zTemp + z] == worldChunks[xTemp, zTemp + z])
+                        if (worldChunks[xTemp + 1, zTemp - z] == worldChunks[xTemp, zTemp - z] &&
+                            worldChunks[xTemp - 1, zTemp - z] == worldChunks[xTemp, zTemp - z])
                         {
                             areaHistory.Add(worldChunks[xTemp, zTemp - z]);
 
                             worldChunks[xTemp, zTemp] = -worldChunks[xTemp, zTemp - z] - 100;
                             worldChunks[xTemp, zTemp - z] = -areaNum - 100;
-
                             debug_CorridorNum++;
                             break;
                         }
@@ -856,7 +864,7 @@ public class LevelGeneration : MonoBehaviour
                 if (xTemp >= 0 && xTemp < genInfo.worldChunkSize.x &&
                     zTemp + z >= 0 && zTemp + z < genInfo.worldChunkSize.y)
                 {
-                    if (worldChunks[xTemp, zTemp + z] > 0 && worldChunks[xTemp, zTemp + z] != areaNum && !areaHistory.Contains(worldChunks[xTemp, zTemp + z]))
+                    if (worldChunks[xTemp, zTemp + z] >= 0 && worldChunks[xTemp, zTemp + z] != areaNum && !areaHistory.Contains(worldChunks[xTemp, zTemp + z]))
                     {
                         if (worldChunks[xTemp + 1, zTemp + z] == worldChunks[xTemp, zTemp + z] &&
                             worldChunks[xTemp - 1, zTemp + z] == worldChunks[xTemp, zTemp + z])
@@ -864,8 +872,7 @@ public class LevelGeneration : MonoBehaviour
                             areaHistory.Add(worldChunks[xTemp, zTemp + z]);
 
                             worldChunks[xTemp, zTemp] = -worldChunks[xTemp, zTemp + z] - 100;
-                            worldChunks[xTemp, zTemp + z] = -areaNum - 100;                            
-
+                            worldChunks[xTemp, zTemp + z] = -areaNum - 100;
                             debug_CorridorNum++;
                             break;
                         }
@@ -884,16 +891,15 @@ public class LevelGeneration : MonoBehaviour
                 if (zTemp >= 0 && zTemp < genInfo.worldChunkSize.y &&
                     xTemp - x >= 0 && xTemp - x < genInfo.worldChunkSize.x)
                 {
-                    if (worldChunks[xTemp - x, zTemp] > 0 && worldChunks[xTemp - x, zTemp] != areaNum && !areaHistory.Contains(worldChunks[xTemp - x, zTemp]))
+                    if (worldChunks[xTemp - x, zTemp] >= 0 && worldChunks[xTemp - x, zTemp] != areaNum && !areaHistory.Contains(worldChunks[xTemp - x, zTemp]))
                     {
-                        if (worldChunks[xTemp + x, zTemp + 1] == worldChunks[xTemp + x, zTemp] &&
-                            worldChunks[xTemp + x, zTemp - 1] == worldChunks[xTemp + x, zTemp])
+                        if (worldChunks[xTemp - x, zTemp + 1] == worldChunks[xTemp - x, zTemp] &&
+                            worldChunks[xTemp - x, zTemp - 1] == worldChunks[xTemp - x, zTemp])
                         {
                             areaHistory.Add(worldChunks[xTemp - x, zTemp]);
 
                             worldChunks[xTemp, zTemp] = -worldChunks[xTemp - x, zTemp] - 100;
                             worldChunks[xTemp - x, zTemp] = -areaNum - 100;
-
                             debug_CorridorNum++;
                             break;
                         }
@@ -912,7 +918,7 @@ public class LevelGeneration : MonoBehaviour
                 if (zTemp >= 0 && zTemp < genInfo.worldChunkSize.y &&
                     xTemp + x >= 0 && xTemp + x < genInfo.worldChunkSize.x)
                 {
-                    if (worldChunks[xTemp + x, zTemp] > 0 && worldChunks[xTemp + x, zTemp] != areaNum && !areaHistory.Contains(worldChunks[xTemp + x, zTemp]))
+                    if (worldChunks[xTemp + x, zTemp] >= 0 && worldChunks[xTemp + x, zTemp] != areaNum && !areaHistory.Contains(worldChunks[xTemp + x, zTemp]))
                     {
                         if (worldChunks[xTemp + x, zTemp + 1] == worldChunks[xTemp + x, zTemp] &&
                             worldChunks[xTemp + x, zTemp - 1] == worldChunks[xTemp + x, zTemp])
@@ -921,7 +927,6 @@ public class LevelGeneration : MonoBehaviour
 
                             worldChunks[xTemp, zTemp] = -worldChunks[xTemp + x, zTemp] - 100;
                             worldChunks[xTemp + x, zTemp] = -areaNum - 100;
-
                             debug_CorridorNum++;
                             break;
                         }
@@ -984,6 +989,11 @@ public class LevelGeneration : MonoBehaviour
     //Generates A Map Texture Of The World With Varying Colors Based On Player's Interaction With Areas
     Texture2D GenerateMapTexture_Large()
     {
+        return GenerateMapTexture_Large(-1);
+    }
+
+    Texture2D GenerateMapTexture_Large(int prevArea)
+    {
         Texture2D temp = new Texture2D(genInfo.worldChunkSize.x,genInfo.worldChunkSize.y);
         for (int x = 0; x < genInfo.worldChunkSize.x; x++)
         {
@@ -992,17 +1002,23 @@ public class LevelGeneration : MonoBehaviour
                 if (worldChunks[x, y] >= 0)
                 {
                     if (worldChunks[x,y] == activeArea)
-                        temp.SetPixel(x, y, new Color(0.1f, 1f, 0.1f, 1));
+                        temp.SetPixel(x, y, mapColors.currentArea);
                     else if (worldAreas[worldChunks[x,y]].accurateInfo == null)
-                        temp.SetPixel(x, y, Color.white);
+                        temp.SetPixel(x, y, mapColors.possibleArea);
+                    else if (worldChunks[x, y] == prevArea)
+                        temp.SetPixel(x, y, mapColors.prevArea);
                     else
-                        temp.SetPixel(x, y, new Color(0.1f,0.1f,0.8f,1));
+                        temp.SetPixel(x, y, mapColors.visitedArea);
                 }
                 else
-                    temp.SetPixel(x, y, new Color(0.5f, 0.5f, 0.5f, 0.3f));
+                    temp.SetPixel(x, y, mapColors.noArea);
             }
         }
         temp.Apply();
+
+        if (minimap != null)
+            minimap.texture = temp;
+
         return temp;
     }
 
@@ -1066,6 +1082,25 @@ public class LevelGeneration : MonoBehaviour
         public int back;
         public int forward;
         public bool hasNeighbours = false;
+    }
+    #endregion
+
+    #region Map
+    [System.Serializable]
+    public class _MapColors
+    {
+        public Color currentArea = new Color(0.4f, 1, 0.4f, 1);
+        public Color prevArea = new Color(0.25f, 0.7f, 0.25f, 1);
+        public Color visitedArea = new Color(0.2f, 0.5f, 0.2f, 1);
+        public Color possibleArea = new Color(0.1f, 0.25f, 0.1f, 1);
+        [Space(10)]
+        public Color currentCorridor = new Color(0.7f, 0.5f, 0.25f, 1);
+        public Color visitedCorridor = new Color(0.5f, 0.35f, 0.175f, 1);
+        public Color possibleCorridor = new Color(0.25f, 0.175f, 0.09f,1);
+        [Space(10)]
+        public Color noArea = new Color(0, 0, 0, 0.5f);
+
+
     }
     #endregion
 

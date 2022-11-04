@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+using Whimsy.Creatures;
 using static PlayerHolder;
 
 public class PlayerHolder : MonoBehaviour
@@ -14,6 +15,8 @@ public class PlayerHolder : MonoBehaviour
     public Rigidbody playerMover;
     [Space(10)]
     public _CameraInfo cameraInfo;
+
+    private _Cooldowns cooldowns = new _Cooldowns();
 
     private float clickTimer = 0;
 
@@ -27,6 +30,8 @@ public class PlayerHolder : MonoBehaviour
     
     private LensDistortion settings;
 
+    [HideInInspector]
+    public List<CreatureObject> equippedCreatures = new List<CreatureObject>();
     
 
     
@@ -46,6 +51,7 @@ public class PlayerHolder : MonoBehaviour
     {
         CameraTracking();
         GetInput();
+        UpdateCooldowns();
 
         UpdateGridPos();
     }
@@ -92,9 +98,35 @@ public class PlayerHolder : MonoBehaviour
             CameraRotation(true);
         if (Input.GetKeyDown(keyboardInput.rotateRight))
             CameraRotation(false);
+
+        if (Input.GetKeyDown(keyboardInput.dodge))
+        {
+            if (V2_moveInput.magnitude > 0)
+                Dodge(V2_moveInput);
+            else
+                Interaction();
+        }
+
+        if (Input.GetKeyDown(keyboardInput.abil1))
+            ActivateAbility(1);
+        if (Input.GetKeyDown(keyboardInput.abil2))
+            ActivateAbility(2);
+        if (Input.GetKeyDown(keyboardInput.abil3))
+            ActivateAbility(3);
         #endregion
 
         ApplyMovement(V2_moveInput);
+    }
+
+    void UpdateCooldowns()
+    {
+        if (cooldowns.dodgeCool > 0)
+            cooldowns.dodgeCool = Mathf.Clamp(cooldowns.dodgeCool - Time.deltaTime, 0, cooldowns.dodgeCool);
+
+        for (int i = 0; i < cooldowns.abilWait.Count; i++)
+        {
+            cooldowns.abilCool[i] = Mathf.Clamp(cooldowns.abilCool[i] - Time.deltaTime, 0, cooldowns.abilCool[i]);
+        }
     }
 
     #region Mouse/Tap Input
@@ -251,6 +283,34 @@ public class PlayerHolder : MonoBehaviour
     }
     #endregion
 
+    #region Player Interation
+    //rolls the player in the target direction, player has I-frames during dodge
+    void Dodge (Vector2 dir)
+    {
+        if (cooldowns.dodgeCool <= 0)
+        {
+
+        }
+    }
+    //Listeners are added to this void whenever the player is in their triggerArea
+    void Interaction()
+    {
+
+    }
+    //Activates 1 of 3 abilities the player can have equipped at a time
+    void ActivateAbility (int abilNum)
+    {
+        if (cooldowns.abilCool[abilNum] <= 0)
+        {
+            if (equippedCreatures.Count > abilNum)
+            {
+
+            }
+        }
+    }
+
+    #endregion
+
     #region Camera Movement
     void CameraTracking()
     {
@@ -297,6 +357,11 @@ public class PlayerHolder : MonoBehaviour
         [Space(10)]
         public KeyCode rotateLeft = KeyCode.Q;
         public KeyCode rotateRight = KeyCode.E;
+        [Space(10)]
+        public KeyCode dodge = KeyCode.DownArrow;
+        public KeyCode abil1 = KeyCode.LeftArrow;
+        public KeyCode abil2 = KeyCode.UpArrow;
+        public KeyCode abil3 = KeyCode.RightArrow;
     }
     [System.Serializable]
     public class _TapInput
@@ -318,7 +383,9 @@ public class PlayerHolder : MonoBehaviour
 
         public float velocityEffect = 0.3f;
         public float verticalMultiplier = 5f;
-
+        [Space (10)]
+        public float dodgeCooldown = 1f;
+        [Space(10)]
         public LayerMask groundLayers = new LayerMask();
     }
 
@@ -337,6 +404,15 @@ public class PlayerHolder : MonoBehaviour
         [Space(10)]
         public bool viewRangeActive = true;
         public int viewRange = 10;
+    }
+
+    public class _Cooldowns
+    {
+        public float dodgeCool = 0;
+        public List<float> abilCool = new List<float>(3);
+
+        public float dodgeWait = 0;
+        public List<float> abilWait = new List<float>(3);
     }
     #endregion
 }

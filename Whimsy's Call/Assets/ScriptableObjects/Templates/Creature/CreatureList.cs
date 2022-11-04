@@ -15,7 +15,7 @@ namespace Whimsy.Creatures
     public class _evoRequirements
     {
         public int reqlevel = 0;
-        public Time reqTime = Time.anyTime;
+        public daySection reqTime = daySection.anyTime;
     }
     [System.Serializable]
     public class _attackInfo
@@ -35,7 +35,7 @@ namespace Whimsy.Creatures
     #endregion
 
     #region Enums
-    public enum Time { anyTime, dayTime, nightTime };
+    public enum daySection { anyTime, dayTime, nightTime };
     #endregion
 }
 

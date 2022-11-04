@@ -23,4 +23,4 @@ MonoBehaviour:
   tileSize: {x: 2, y: 1, z: 2}
   randomlyGenerated: 0
   seed: 1
-  maxCorridorLength: 20
+  maxCorridorLength: 2
