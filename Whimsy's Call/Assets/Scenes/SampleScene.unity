@@ -415,6 +415,36 @@ PrefabInstance:
       propertyPath: cameraInfo.viewRangeActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: physicsVar.playerHeight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: physicsVar.sphereCastRadius
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: cameraInfo.cameraTrackDeadzone.x
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: cameraInfo.cameraTrackDeadzone.y
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: cameraInfo.moveSpeed
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: cameraInfo.idleTimeLimit
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 3058840685428787382, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
         type: 3}
       propertyPath: m_TagString

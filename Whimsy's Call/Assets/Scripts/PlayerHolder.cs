@@ -13,6 +13,7 @@ public class PlayerHolder : MonoBehaviour
     [Space (10)]
     public _PhysicsVar physicsVar;
     public Rigidbody playerMover;
+    public Transform playerModel;
     [Space(10)]
     public _CameraInfo cameraInfo;
 
@@ -27,6 +28,9 @@ public class PlayerHolder : MonoBehaviour
 
     private Vector2 V2_moveInput;
 
+    //Time since last movement
+    private float idleTimer = 0;
+    private Vector3 playerMoveDirection = Vector3.zero;
     
     private LensDistortion settings;
 
@@ -49,7 +53,11 @@ public class PlayerHolder : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        FakeGravity();
+
         CameraTracking();
+        PlayerModelRotation();
+
         GetInput();
         UpdateCooldowns();
 
@@ -59,6 +67,7 @@ public class PlayerHolder : MonoBehaviour
     #region InputHandlers
     void GetInput()
     {
+       
         V2_moveInput = Vector2.zero;
 
         #region TapInputs
@@ -99,13 +108,19 @@ public class PlayerHolder : MonoBehaviour
         if (Input.GetKeyDown(keyboardInput.rotateRight))
             CameraRotation(false);
 
-        if (Input.GetKeyDown(keyboardInput.dodge))
+        if (V2_moveInput.magnitude > 0)
         {
-            if (V2_moveInput.magnitude > 0)
+            if (Input.GetKeyDown(keyboardInput.dodge))
                 Dodge(V2_moveInput);
-            else
-                Interaction();
+            idleTimer = 0;
         }
+        else
+        {
+            if (Input.GetKeyDown(keyboardInput.dodge))
+                Interaction();
+            idleTimer += Time.deltaTime;
+        }
+    
 
         if (Input.GetKeyDown(keyboardInput.abil1))
             ActivateAbility(1);
@@ -228,17 +243,34 @@ public class PlayerHolder : MonoBehaviour
     #endregion
 
     #region Player Movement
+    void FakeGravity ()
+    {
+        //Transform To Ground
+        RaycastHit hit;
+        if (Physics.SphereCast(playerMover.transform.position, physicsVar.sphereCastRadius, Vector3.down, out hit, 10, physicsVar.groundLayers))
+        {
+            float temp = hit.point.y + physicsVar.playerHeight;
+
+            temp = Mathf.MoveTowards(playerMover.transform.position.y, temp, Time.deltaTime * 9);
+
+            playerMover.transform.position = new Vector3(playerMover.transform.position.x, temp, playerMover.transform.position.z);
+        }
+
+        //Slow Velocity
+        playerMover.velocity = new Vector3(playerMover.velocity.x, playerMover.velocity.y * 0.5f, playerMover.velocity.z);
+    }
+
     void ApplyMovement(Vector2 moveDir)
     {
-        Vector3 forceInput = 
+        playerMoveDirection = 
             moveDir.x * cameraInfo.cameraHook.right +
             moveDir.y * cameraInfo.cameraHook.forward;
 
-        forceInput = AdjustMovementSlopes(forceInput);
+        playerMoveDirection = AdjustMovementSlopes(playerMoveDirection);
 
         Vector3 tempVelocity = new Vector3(playerMover.velocity.x,0, playerMover.velocity.z) * physicsVar.velocityEffect;
 
-        Vector3 forcePush = forceInput;
+        Vector3 forcePush = playerMoveDirection;
 
         if (playerMover.velocity.magnitude > physicsVar.maxSpeed)
             forcePush -= tempVelocity;
@@ -255,6 +287,15 @@ public class PlayerHolder : MonoBehaviour
         
 
         playerMover.AddForce(forcePush, ForceMode.Impulse);
+    }
+
+    void PlayerModelRotation()
+    {
+        if (playerMoveDirection.magnitude > 0)
+        {
+            //playerModel.forward = playerMoveDirection;
+            playerModel.rotation = Quaternion.RotateTowards(playerModel.rotation, Quaternion.LookRotation(playerMoveDirection),Time.deltaTime * 360);
+        }
     }
 
     //Adjust MoveDir based on the ground below PlayerMover
@@ -315,10 +356,20 @@ public class PlayerHolder : MonoBehaviour
     void CameraTracking()
     {
         #region Position
+        Vector3 tarPos = cameraInfo.cameraHook.position;
+        tarPos.x = Mathf.MoveTowards(tarPos.x, cameraInfo.cameraHolder.position.x, cameraInfo.cameraTrackDeadzone.x);
+        tarPos.z = Mathf.MoveTowards(tarPos.z, cameraInfo.cameraHolder.position.z, cameraInfo.cameraTrackDeadzone.y);
+
         cameraInfo.cameraHolder.position = Vector3.Lerp(
             cameraInfo.cameraHolder.position,
+            tarPos,
+            (1 / cameraInfo.moveSpeed) * Time.deltaTime);
+
+        if (idleTimer > cameraInfo.idleTimeLimit)
+            cameraInfo.cameraHolder.position = Vector3.Lerp(
+            cameraInfo.cameraHolder.position,
             cameraInfo.cameraHook.position,
-            1/cameraInfo.moveSpeed);
+            (0.25f / cameraInfo.moveSpeed) * Time.deltaTime);
         #endregion
 
         #region Rotation
@@ -387,6 +438,8 @@ public class PlayerHolder : MonoBehaviour
         public float dodgeCooldown = 1f;
         [Space(10)]
         public LayerMask groundLayers = new LayerMask();
+        public float sphereCastRadius = 0.25f;
+        public float playerHeight = 0.5f;
     }
 
     [System.Serializable]
@@ -404,6 +457,9 @@ public class PlayerHolder : MonoBehaviour
         [Space(10)]
         public bool viewRangeActive = true;
         public int viewRange = 10;
+
+        public Vector2 cameraTrackDeadzone = new Vector2(3, 1.5f);
+        public float idleTimeLimit = 1f;
     }
 
     public class _Cooldowns
