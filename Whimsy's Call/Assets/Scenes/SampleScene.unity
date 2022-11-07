@@ -445,6 +445,16 @@ PrefabInstance:
       propertyPath: cameraInfo.idleTimeLimit
       value: 1.5
       objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: physicsVar.dodgeForce
+      value: 400
+      objectReference: {fileID: 0}
+    - target: {fileID: 710370409625148498, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
+        type: 3}
+      propertyPath: physicsVar.dodgeDuration
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 3058840685428787382, guid: b3cbe63162cd2a64ca8db0ba48a27e8a,
         type: 3}
       propertyPath: m_TagString

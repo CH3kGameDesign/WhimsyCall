@@ -123,11 +123,11 @@ public class PlayerHolder : MonoBehaviour
     
 
         if (Input.GetKeyDown(keyboardInput.abil1))
-            ActivateAbility(1);
+            ActivateAbility(0);
         if (Input.GetKeyDown(keyboardInput.abil2))
-            ActivateAbility(2);
+            ActivateAbility(1);
         if (Input.GetKeyDown(keyboardInput.abil3))
-            ActivateAbility(3);
+            ActivateAbility(2);
         #endregion
 
         ApplyMovement(V2_moveInput);
@@ -138,10 +138,16 @@ public class PlayerHolder : MonoBehaviour
         if (cooldowns.dodgeCool > 0)
             cooldowns.dodgeCool = Mathf.Clamp(cooldowns.dodgeCool - Time.deltaTime, 0, cooldowns.dodgeCool);
 
-        for (int i = 0; i < cooldowns.abilWait.Count; i++)
+        if (cooldowns.dodgeCool < physicsVar.dodgeCooldown - physicsVar.dodgeDuration)
+            physicsVar.dodgeDirection = Vector3.zero;
+
+        for (int i = 0; i < cooldowns.abilCool.Count; i++)
         {
             cooldowns.abilCool[i] = Mathf.Clamp(cooldowns.abilCool[i] - Time.deltaTime, 0, cooldowns.abilCool[i]);
         }
+
+        if (cooldowns.invincibleTimer > 0)
+            cooldowns.invincibleTimer -= Time.deltaTime;
     }
 
     #region Mouse/Tap Input
@@ -287,6 +293,12 @@ public class PlayerHolder : MonoBehaviour
         
 
         playerMover.AddForce(forcePush, ForceMode.Impulse);
+
+        if (physicsVar.dodgeDirection.magnitude > 0)
+        {
+            Debug.Log("Dodging?");
+            playerMover.AddForce(physicsVar.dodgeDirection * physicsVar.dodgeForce * Time.deltaTime * 50, ForceMode.Impulse);
+        }
     }
 
     void PlayerModelRotation()
@@ -330,7 +342,10 @@ public class PlayerHolder : MonoBehaviour
     {
         if (cooldowns.dodgeCool <= 0)
         {
+            physicsVar.dodgeDirection = playerMoveDirection;
 
+            cooldowns.invincibleTimer = Mathf.Max(cooldowns.invincibleTimer, physicsVar.dodgeInvincibiliity);
+            cooldowns.dodgeCool = physicsVar.dodgeCooldown;
         }
     }
     //Listeners are added to this void whenever the player is in their triggerArea
@@ -436,6 +451,11 @@ public class PlayerHolder : MonoBehaviour
         public float verticalMultiplier = 5f;
         [Space (10)]
         public float dodgeCooldown = 1f;
+        public float dodgeForce = 15f;
+        public float dodgeDuration = 0.2f;
+        public float dodgeInvincibiliity = 0.2f;
+        [HideInInspector]
+        public Vector3 dodgeDirection = Vector3.zero;
         [Space(10)]
         public LayerMask groundLayers = new LayerMask();
         public float sphereCastRadius = 0.25f;
@@ -464,11 +484,10 @@ public class PlayerHolder : MonoBehaviour
 
     public class _Cooldowns
     {
+        public float invincibleTimer = 0;
+
         public float dodgeCool = 0;
         public List<float> abilCool = new List<float>(3);
-
-        public float dodgeWait = 0;
-        public List<float> abilWait = new List<float>(3);
     }
     #endregion
 }
