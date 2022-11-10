@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.UIElements;
 using Whimsy.Creatures;
 using static PlayerHolder;
 
@@ -16,6 +17,8 @@ public class PlayerHolder : MonoBehaviour
     public Transform playerModel;
     [Space(10)]
     public _CameraInfo cameraInfo;
+    [Space(10)]
+    public _UIObjects uiObjects;
 
     private _Cooldowns cooldowns = new _Cooldowns();
 
@@ -113,12 +116,18 @@ public class PlayerHolder : MonoBehaviour
             if (Input.GetKeyDown(keyboardInput.dodge))
                 Dodge(V2_moveInput);
             idleTimer = 0;
+
+            uiObjects.dodgeButton.SetActive(true);
+            uiObjects.interactButton.SetActive(false);
         }
         else
         {
             if (Input.GetKeyDown(keyboardInput.dodge))
                 Interaction();
             idleTimer += Time.deltaTime;
+
+            uiObjects.dodgeButton.SetActive(false);
+            uiObjects.interactButton.SetActive(true);
         }
     
 
@@ -136,7 +145,10 @@ public class PlayerHolder : MonoBehaviour
     void UpdateCooldowns()
     {
         if (cooldowns.dodgeCool > 0)
+        {
             cooldowns.dodgeCool = Mathf.Clamp(cooldowns.dodgeCool - Time.deltaTime, 0, cooldowns.dodgeCool);
+            uiObjects.dodgeTimer.fillAmount = 1 - (cooldowns.dodgeCool / physicsVar.dodgeCooldown);
+        }
 
         if (cooldowns.dodgeCool < physicsVar.dodgeCooldown - physicsVar.dodgeDuration)
             physicsVar.dodgeDirection = Vector3.zero;
@@ -190,6 +202,11 @@ public class PlayerHolder : MonoBehaviour
     {
         V2_moveInput += new Vector2(curClick.screenPos.x - initialClick.screenPos.x, curClick.screenPos.y - initialClick.screenPos.y);
         V2_moveInput = Vector2.ClampMagnitude(V2_moveInput, 1);
+    }
+
+    public void Dodge ()
+    {
+        Dodge(V2_moveInput);
     }
 
     public Ray RaycastWithDistortion(Vector2 screenPosition)
@@ -281,7 +298,7 @@ public class PlayerHolder : MonoBehaviour
         if (playerMover.velocity.magnitude > physicsVar.maxSpeed)
             forcePush -= tempVelocity;
 
-        if (V2_moveInput.magnitude == 0)
+        if (moveDir.magnitude == 0)
         {
             forcePush -= tempVelocity;
             forcePush *= physicsVar.brakingSpeed;
@@ -296,7 +313,6 @@ public class PlayerHolder : MonoBehaviour
 
         if (physicsVar.dodgeDirection.magnitude > 0)
         {
-            Debug.Log("Dodging?");
             playerMover.AddForce(physicsVar.dodgeDirection * physicsVar.dodgeForce * Time.deltaTime * 50, ForceMode.Impulse);
         }
     }
@@ -349,7 +365,7 @@ public class PlayerHolder : MonoBehaviour
         }
     }
     //Listeners are added to this void whenever the player is in their triggerArea
-    void Interaction()
+    public void Interaction()
     {
 
     }
@@ -488,6 +504,14 @@ public class PlayerHolder : MonoBehaviour
 
         public float dodgeCool = 0;
         public List<float> abilCool = new List<float>(3);
+    }
+
+    [System.Serializable]
+    public class _UIObjects
+    {
+        public GameObject dodgeButton;
+        public UnityEngine.UI.Image dodgeTimer;
+        public GameObject interactButton;
     }
     #endregion
 }

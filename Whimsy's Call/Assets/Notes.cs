@@ -11,9 +11,9 @@ public class Notes : MonoBehaviour
      *      ----Going \/ from area 0 leads to area with no corridor back (FIXED)
      *      
      *  Player Interactions
-     *      Dodge Roll
+     *      ---Dodge Roll
      *      Creature Abilities
-     *      Interactable Items
+     *      Interactable Itemsa
      *      
      *Still To Do:
      *  Enemies

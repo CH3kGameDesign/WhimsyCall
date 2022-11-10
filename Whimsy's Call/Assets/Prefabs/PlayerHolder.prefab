@@ -406,30 +406,38 @@ MonoBehaviour:
     clickWaiter: 0.15
     cameraSwipeDistance: 0.5
   physicsVar:
-    speed: 30
+    speed: 50
     brakingSpeed: 20
-    maxSpeed: 10
-    velocityEffect: 0.175
-    verticalMultiplier: 5
+    maxSpeed: 5
+    velocityEffect: 0.5
+    verticalMultiplier: 0.75
     dodgeCooldown: 1
+    dodgeForce: 400
+    dodgeDuration: 0.25
+    dodgeInvincibiliity: 0.2
+    dodgeDirection: {x: 0, y: 0, z: 0}
     groundLayers:
       serializedVersion: 2
       m_Bits: 256
-    sphereCastRadius: 0.25
-    playerHeight: 0.5
+    sphereCastRadius: 0.5
+    playerHeight: 1
   playerMover: {fileID: 1133573161247248031}
   playerModel: {fileID: 2932395461825224733}
   cameraInfo:
     cameraHook: {fileID: 8465629445392710352}
     cameraHolder: {fileID: 5779638804956279727}
     cameraMain: {fileID: 4447141849067148806}
-    moveSpeed: 3
+    moveSpeed: 0.25
     rotSpeed: 3
     tarRot: 0
     viewRangeActive: 1
     viewRange: 10
-    cameraTrackDeadzone: {x: 3, y: 1.5}
-    idleTimeLimit: 1
+    cameraTrackDeadzone: {x: 1.5, y: 0.75}
+    idleTimeLimit: 1.5
+  uiObjects:
+    dodgeButton: {fileID: 0}
+    dodgeTimer: {fileID: 0}
+    interactButton: {fileID: 0}
   equippedCreatures: []
 --- !u!1 &7976851249657971649
 GameObject:
