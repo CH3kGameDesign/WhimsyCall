@@ -13,7 +13,7 @@ public class DetectionSphere : MonoBehaviour
 
     }
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerStay(Collider other)
     {
         if (navController != null)
             navController.triggerEnter(other);

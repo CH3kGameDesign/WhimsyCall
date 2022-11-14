@@ -19,14 +19,20 @@ public class Navigation : MonoBehaviour
     private Vector3 tarDir = Vector3.zero;
     private Vector3 objectMoveDirection = Vector3.zero;
 
-
+    private Vector3 groundNormal = Vector3.up;
     
 
     // Start is called before the first frame update
     void Start()
     {
         aiInfo.detectionSphere.navController = this;
-        aiInfo.detectionSphere.GetComponent<SphereCollider>().radius = aiInfo.detectionRange;
+        float tempDetectRange = 1;
+        foreach (var item in aiInfo.navItemInteractions)
+        {
+            if (item.detectionRange > tempDetectRange)
+                tempDetectRange = item.detectionRange;
+        }
+        aiInfo.detectionSphere.GetComponent<SphereCollider>().radius = tempDetectRange;
     }
 
     public void triggerEnter(Collider other)
@@ -44,12 +50,14 @@ public class Navigation : MonoBehaviour
                         break;
                     }
                 }
-                if (add)
+                if (add && Vector3.Distance(other.transform.position, objectMover.position) < aiInfo.navItemInteractions[i].detectionRange)
                 {
                     _NavItem temp = new _NavItem();
                     temp.target = other.transform;
                     temp.priority = aiInfo.navItemInteractions[i].priority;
                     temp.interaction = aiInfo.navItemInteractions[i].interaction;
+                    temp.intendedDistance = aiInfo.navItemInteractions[i].intendedDistance;
+                    temp.abandonRange = aiInfo.navItemInteractions[i].abandonRange;
 
                     aiInfo.activeNavItems.Add(temp);
                 }
@@ -80,7 +88,7 @@ public class Navigation : MonoBehaviour
         for (int i = aiInfo.activeNavItems.Count - 1; i >= 0; i--)
         {
             _NavItem item = aiInfo.activeNavItems[i];
-            if (Vector3.Distance(item.target.position, objectMover.position) > aiInfo.abandonRange)
+            if (Vector3.Distance(item.target.position, objectMover.position) > aiInfo.activeNavItems[i].abandonRange)
             {
                 aiInfo.activeNavItems.RemoveAt(i);
             }
@@ -89,10 +97,17 @@ public class Navigation : MonoBehaviour
                 switch (item.interaction)
                 {
                     case _Interaction.chase:
-                        tempDir += (item.target.position - objectMover.position) * item.priority;
+                        if (item.intendedDistance > Vector3.Distance(item.target.position, objectMover.position))
+                        {
+                            tempDir += Vector3.zero;
+                        }
+                        else
+                            tempDir += (item.target.position - objectMover.position) * item.priority;
                         break;
                     case _Interaction.avoid:
                         tempDir -= (item.target.position - objectMover.position) * item.priority;
+                        //if (item.intendedDistance > 0)
+                          //  tempDir -= Vector3.Normalize(objectMover.position - item.target.position) * item.intendedDistance;
                         break;
                     default:
                         break;
@@ -100,22 +115,16 @@ public class Navigation : MonoBehaviour
             }
         }
 
-
-        Debug.Log("Speed Step 1 = " + tempDir);
-
         tempDir.y = 0;
         tempDir = Vector3.ClampMagnitude(tempDir, 1);
 
-        Debug.Log("Speed Step 2 = " + tempDir);
-
         tarDir = Vector3.Lerp(Vector3.Normalize(tarDir), Vector3.Normalize(tempDir), Time.deltaTime * physicsVar.turningSpeed);
 
-        Debug.Log("Speed Step 3 = " + tarDir);
 
         //Option For Variable Speed
+        
         tarDir *= tempDir.magnitude;
 
-        Debug.Log("Speed Step 4 = " + tarDir);
         ApplyMovement(tarDir);
     }
     #endregion
@@ -190,9 +199,17 @@ public class Navigation : MonoBehaviour
 
     void PlayerModelRotation()
     {
-        if (objectMoveDirection.magnitude > 0)
+        bool facingTarget = false;
+        foreach (var item in aiInfo.activeNavItems)
         {
-            //playerModel.forward = playerMoveDirection;
+            if (Vector3.Distance(item.target.position, objectMover.position) < item.intendedDistance + 1)
+            {
+                objectModel.rotation = Quaternion.RotateTowards(objectModel.rotation, Quaternion.LookRotation(item.target.position - objectMover.position, groundNormal), Time.deltaTime * 360);
+                facingTarget = true;
+            }
+        }
+        if (objectMoveDirection.magnitude > 0 && !facingTarget)
+        {
             objectModel.rotation = Quaternion.RotateTowards(objectModel.rotation, Quaternion.LookRotation(objectMoveDirection), Time.deltaTime * 360);
         }
     }
@@ -204,8 +221,8 @@ public class Navigation : MonoBehaviour
         RaycastHit hit;
         if (Physics.SphereCast(objectMover.transform.position, 0.4f, Vector3.down, out hit, 1, physicsVar.groundLayers))
         {
-            Vector3 normal = hit.normal;
-            temp = Vector3.ProjectOnPlane(temp, normal);
+            groundNormal = hit.normal;
+            temp = Vector3.ProjectOnPlane(temp, groundNormal);
             temp.y *= physicsVar.verticalMultiplier;
         }
         return temp;
@@ -293,9 +310,6 @@ public class Navigation : MonoBehaviour
 
         public List<_NavItemType> navItemInteractions = new List<_NavItemType>();
 
-        public float detectionRange = 10f;
-        public float abandonRange = 10f;
-
         public DetectionSphere detectionSphere;
 
         [HideInInspector]
@@ -307,14 +321,20 @@ public class Navigation : MonoBehaviour
     {
         public string tag = "";
         public _Interaction interaction;
-        public float priority = 1;
+        public float priority = 1f;
+        public float intendedDistance = 1f;
+        [Space (10)]
+        public float detectionRange = 10f;
+        public float abandonRange = 15f;
     }
 
     public class _NavItem
     {
         public Transform target;
         public _Interaction interaction;
-        public float priority = 1;
+        public float priority = 1f;
+        public float intendedDistance = 1f;
+        public float abandonRange = 10f;
     }
 
     public enum _Interaction {chase,avoid};
