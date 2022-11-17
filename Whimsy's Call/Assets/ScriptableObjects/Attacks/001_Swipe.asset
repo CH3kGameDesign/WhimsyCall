@@ -14,17 +14,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Swipe
   id: 1
-  description: 
-  attack1:
-    prefab: {fileID: 0}
-    damage: 0
+  description: Simple Swipe Attack
+  attacks:
+  - prefab: {fileID: 1797226288116927587, guid: a8d8ab5cddda74847a64cbaf8078b8a5,
+      type: 3}
+    damage: 10
+    breakOnHit: 0
+    moveWithPlayer: 1
+    lifetime: 1
     burnChance: 0
     poisonChance: 0
     freezeChance: 0
-  attack2:
-    prefab: {fileID: 0}
-    damage: 0
-    burnChance: 0
-    poisonChance: 0
-    freezeChance: 0
-  cooldown: 0
+    hitEnemies: 1
+    hitFriendlies: 0
+    hitSelf: 0
+    hitPlayer: 0
+    hitPlayerCreatures: 0
+    hitNonPlayerCreatures: 1
+    self: {fileID: 0}
+  moveMultiplier: 0.5
+  moveMultiplierDuration: 1
+  cooldown: 1

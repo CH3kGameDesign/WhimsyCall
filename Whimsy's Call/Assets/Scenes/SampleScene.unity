@@ -1594,6 +1594,7 @@ MonoBehaviour:
   activeArea: 0
   area_LoadNextFrame: -1
   playerObject: {fileID: 1041242183}
+  objRef: {fileID: 11400000, guid: 997cbb210f64718489e415c6dcf46ec1, type: 2}
 --- !u!4 &2053883996
 Transform:
   m_ObjectHideFlags: 0
